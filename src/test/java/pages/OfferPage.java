@@ -1,25 +1,26 @@
 package pages;
 
 import com.codeborne.selenide.Condition;
+import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
 import data.DataHelper;
-import org.openqa.selenium.Keys;
 
-import static com.codeborne.selenide.Selectors.withText;
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$$;
 
 public class OfferPage {
+
     private SelenideElement debitButton = $$("button").find(Condition.exactText("Купить"));
     private SelenideElement creditButton = $$("button").find(Condition.exactText("Купить в кредит"));
-    private SelenideElement cardNumberField = $("[placeholder=\"0000 0000 0000 0000\"]");
-    private SelenideElement cardMonthField = $("[placeholder=\"08\"]");
-    private SelenideElement cardYearField = $("[placeholder=\"22\"]");
-    private SelenideElement cardOwnerField = $("div:nth-child(3) > span > span:nth-child(1) > span > span > span.input__box > input");
-    private SelenideElement cardCvcField = $("placeholder=\"999\"");
+    private ElementsCollection formField = $$(".input__inner");
+    private SelenideElement cardNumberField = formField.findBy(Condition.text("Номер карты")).$(".input__control");
+    private SelenideElement cardMonthField = formField.findBy(Condition.text("Месяц")).$(".input__control");
+    private SelenideElement cardYearField = formField.findBy(Condition.text("Год")).$(".input__control");
+    private SelenideElement cardOwnerField = formField.findBy(Condition.text("Владелец")).$(".input__control");
+    private SelenideElement cardCvcField = formField.findBy(Condition.text("CVC/CVV")).$(".input__control");
     private SelenideElement continueButton = $$("button").find(Condition.exactText("Продолжить"));
-    private SelenideElement successNotification = $(withText("Операция одобрена Банком."));
-    private SelenideElement errorNotification = $(withText("Ошибка! Банк отказал в проведении операции."));
+    private SelenideElement successNotification = $(".notification_status_ok");
+    private SelenideElement errorNotification = $(".notification_status_error");
 
     public DebitPage debitPage() {
         debitButton.click();
@@ -56,42 +57,46 @@ public class OfferPage {
     }
 
     public void checkSuccessNotification() {
-        successNotification.waitUntil(Condition.visible, 15000);
+        successNotification.waitUntil(Condition.visible, 30000);
     }
 
     public void checkErrorNotification() {
-        errorNotification.waitUntil(Condition.visible, 15000);
+        errorNotification.waitUntil(Condition.visible, 30000);
+    }
+
+    public void checkSuccessNotificationHidden() {
+        successNotification.waitUntil(Condition.hidden, 15000);
+    }
+
+    public void checkErrorNotificationHidden() {
+        errorNotification.waitUntil(Condition.hidden, 15000);
     }
 
     public void checkCardNumberError() {
-        cardNumberField.$(".input__sub").shouldHave(Condition.exactText("Неверный формат"));
+        formField.findBy(Condition.text("Номер карты")).$(".input__sub").shouldHave(Condition.exactText("Неверный формат"));
     }
 
     public void checkWrongMonthError() {
-        cardMonthField.$(".input__sub").shouldHave(Condition.exactText("Неверно указан срок действия карты"));
+        formField.findBy(Condition.text("Месяц")).$(".input__sub").shouldHave(Condition.exactText("Неверно указан срок действия карты"));
     }
 
     public void checkEarlyYearError() {
-        cardYearField.$(".input__sub").shouldHave(Condition.exactText("Истёк срок действия карты"));
+        formField.findBy(Condition.text("Год")).$(".input__sub").shouldHave(Condition.exactText("Истёк срок действия карты"));
     }
 
     public void checkWrongCvcError() {
-        cardCvcField.$(".input__sub").shouldHave(Condition.exactText("Неверный формат"));
+        formField.findBy(Condition.text("CVC/CVV")).$(".input__sub").shouldHave(Condition.exactText("Неверный формат"));
     }
 
     public void checkEmptyNameError() {
-        cardOwnerField.$(".input__sub").shouldHave(Condition.exactText("Поле обязательно для заполнения"));
+        formField.findBy(Condition.text("Владелец")).$(".input__sub").shouldHave(Condition.exactText("Поле обязательно для заполнения"));
     }
 
-    public void checkEmptyCardError() {
-        cardNumberField.$(".input__sub").shouldHave(Condition.exactText("Неверный формат"));
+    public void checkEmptyMonthError() {
+        formField.findBy(Condition.text("Месяц")).$(".input__sub").shouldHave(Condition.exactText("Неверный формат"));
     }
 
-    public void cleanData() {
-        cardNumberField.sendKeys(Keys.chord(Keys.CONTROL, "a"), Keys.DELETE);
-        cardMonthField.sendKeys(Keys.chord(Keys.CONTROL, "a"), Keys.DELETE);
-        cardYearField.sendKeys(Keys.chord(Keys.CONTROL, "a"), Keys.DELETE);
-        cardOwnerField.sendKeys(Keys.chord(Keys.CONTROL, "a"), Keys.DELETE);
-        cardCvcField.sendKeys(Keys.chord(Keys.CONTROL, "a"), Keys.DELETE);
+    public void checkEmptyYearError() {
+        formField.findBy(Condition.text("Год")).$(".input__sub").shouldHave(Condition.exactText("Неверный формат"));
     }
 }
