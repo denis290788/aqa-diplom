@@ -3,24 +3,21 @@ package test;
 import com.codeborne.selenide.logevents.SelenideLogger;
 import data.DataHelper;
 import io.qameta.allure.selenide.AllureSelenide;
+import lombok.SneakyThrows;
 import lombok.val;
 import org.junit.jupiter.api.*;
-import pages.CreditPage;
-import pages.DebitPage;
 import pages.OfferPage;
 
-import java.sql.SQLException;
-
-import static com.codeborne.selenide.Selenide.open;
 import static dbUtils.DbUtils.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 public class OfferTest {
 
+    @SneakyThrows
     @AfterEach
     @DisplayName("Чистит базу данных перед каждым тестом")
-    void cleanBase() throws SQLException {
+    void cleanBase() {
         cleanData();
     }
 
@@ -34,101 +31,94 @@ public class OfferTest {
         SelenideLogger.removeListener("allure");
     }
 
-
-    static DebitPage openDebitPage() {
-        val offerPage = open("http://localhost:8080/", OfferPage.class);
-        offerPage.debitPage();
-        return new DebitPage();
-    }
-
-    static CreditPage openCreditPage() {
-        val offerPage = open("http://localhost:8080/", OfferPage.class);
-        offerPage.creditPage();
-        return new CreditPage();
-    }
-
+    @SneakyThrows
     @Test
     @DisplayName("Покупка при валидных данных по карте APPROVED. " +
             "Покупка подтверждается, создаются PaymentEntity и OrderEntity")
-    void shouldConfirmPaymentWithValidDataCardOne() throws SQLException {
-        val debitPage = openDebitPage();
-        debitPage.enterCardNumber(DataHelper.CardNumber.getApprovedCardNumber());
-        debitPage.enterCardMonth(DataHelper.CardMonth.getRandomCardMonth());
-        debitPage.enterCardYear(DataHelper.CardYear.getValidCardYear());
-        debitPage.enterOwnerName(DataHelper.OwnerName.getValidOwnerName());
-        debitPage.enterCardCvv(DataHelper.CardCvv.getValidCardCvv());
+    void shouldConfirmPaymentWithValidDataCardOne() {
+        val offerPage = new OfferPage();
+        val debitPage = offerPage.openDebitPage();
+        debitPage.enterCardNumber(DataHelper.getApprovedCardNumber());
+        debitPage.enterCardMonth(DataHelper.getRandomCardMonth());
+        debitPage.enterCardYear(DataHelper.getValidCardYear());
+        debitPage.enterOwnerName(DataHelper.getValidOwnerName());
+        debitPage.enterCardCvv(DataHelper.getValidCardCvv());
         debitPage.continueButton();
         debitPage.checkSuccessNotification();
         debitPage.checkErrorNotificationHidden();
-        val cardStatus = getDebitCardStatus();
-        assertEquals("APPROVED", cardStatus);
-        assertNotEquals("", getOrderEntityId(getPaymentEntityId("APPROVED")));
+        assertEquals("APPROVED", getEntryFromPaymentEntity().getStatus());
+        assertNotEquals("", getEntryFromOrderEntity().getId());
     }
 
+    @SneakyThrows
     @Test
     @DisplayName("Запрос кредита при валидных данных по карте APPROVED. " +
             "Кредит подтверждается, создаются CreditRequestEntity и OrderEntity")
-    void shouldConfirmCreditWithValidDataCardOne() throws SQLException {
-        val creditPage = openCreditPage();
-        creditPage.enterCardNumber(DataHelper.CardNumber.getApprovedCardNumber());
-        creditPage.enterCardMonth(DataHelper.CardMonth.getRandomCardMonth());
-        creditPage.enterCardYear(DataHelper.CardYear.getValidCardYear());
-        creditPage.enterOwnerName(DataHelper.OwnerName.getValidOwnerName());
-        creditPage.enterCardCvv(DataHelper.CardCvv.getValidCardCvv());
+    void shouldConfirmCreditWithValidDataCardOne() {
+        val offerPage = new OfferPage();
+        val creditPage = offerPage.openCreditPage();
+        creditPage.enterCardNumber(DataHelper.getApprovedCardNumber());
+        creditPage.enterCardMonth(DataHelper.getRandomCardMonth());
+        creditPage.enterCardYear(DataHelper.getValidCardYear());
+        creditPage.enterOwnerName(DataHelper.getValidOwnerName());
+        creditPage.enterCardCvv(DataHelper.getValidCardCvv());
         creditPage.continueButton();
         creditPage.checkSuccessNotification();
         creditPage.checkErrorNotificationHidden();
-        val cardStatus = getCreditCardStatus();
-        assertEquals("APPROVED", cardStatus);
-        assertNotEquals("", getOrderEntityId(getCreditRequestEntityId("APPROVED")));
+        assertEquals("APPROVED", getEntryFromCreditRequestEntity().getStatus());
+        assertNotEquals("", getEntryFromOrderEntity().getId());
     }
 
+    @SneakyThrows
     @Test
     @DisplayName("Покупка при валидных данных по карте DECLINED. " +
             "Появляется сообщение об отклонении операции, создается только PaymentEntity без OrderEntity")
-    void shouldNotConfirmPaymentWithValidDataCardTwo() throws SQLException {
-        val debitPage = openDebitPage();
-        debitPage.enterCardNumber(DataHelper.CardNumber.getDeclinedCardNumber());
-        debitPage.enterCardMonth(DataHelper.CardMonth.getRandomCardMonth());
-        debitPage.enterCardYear(DataHelper.CardYear.getValidCardYear());
-        debitPage.enterOwnerName(DataHelper.OwnerName.getValidOwnerName());
-        debitPage.enterCardCvv(DataHelper.CardCvv.getValidCardCvv());
+    void shouldNotConfirmPaymentWithValidDataCardTwo() {
+        val offerPage = new OfferPage();
+        val debitPage = offerPage.openDebitPage();
+        debitPage.enterCardNumber(DataHelper.getDeclinedCardNumber());
+        debitPage.enterCardMonth(DataHelper.getRandomCardMonth());
+        debitPage.enterCardYear(DataHelper.getValidCardYear());
+        debitPage.enterOwnerName(DataHelper.getValidOwnerName());
+        debitPage.enterCardCvv(DataHelper.getValidCardCvv());
         debitPage.continueButton();
         debitPage.checkErrorNotification();
         debitPage.checkSuccessNotificationHidden();
-        val cardStatus = getDebitCardStatus();
-        assertEquals("DECLINED", cardStatus);
-        assertEquals("", getOrderEntityId(getPaymentEntityId("DECLINED")));
+        assertEquals("DECLINED", getEntryFromPaymentEntity().getStatus());
+        assertEquals("", getEntryFromOrderEntity().getId());
     }
 
+    @SneakyThrows
     @Test
     @DisplayName("Запрос кредита при валидных данных по карте DECLINED. " +
             "Появляется сообщение об отклонении операции, создается только CreditRequestEntity без OrderEntity")
-    void shouldNotConfirmCreditWithValidDataCardTwo() throws SQLException {
-        val creditPage = openCreditPage();
-        creditPage.enterCardNumber(DataHelper.CardNumber.getDeclinedCardNumber());
-        creditPage.enterCardMonth(DataHelper.CardMonth.getRandomCardMonth());
-        creditPage.enterCardYear(DataHelper.CardYear.getValidCardYear());
-        creditPage.enterOwnerName(DataHelper.OwnerName.getValidOwnerName());
-        creditPage.enterCardCvv(DataHelper.CardCvv.getValidCardCvv());
+    void shouldNotConfirmCreditWithValidDataCardTwo() {
+        val offerPage = new OfferPage();
+        val creditPage = offerPage.openCreditPage();
+        creditPage.enterCardNumber(DataHelper.getDeclinedCardNumber());
+        creditPage.enterCardMonth(DataHelper.getRandomCardMonth());
+        creditPage.enterCardYear(DataHelper.getValidCardYear());
+        creditPage.enterOwnerName(DataHelper.getValidOwnerName());
+        creditPage.enterCardCvv(DataHelper.getValidCardCvv());
         creditPage.continueButton();
         creditPage.checkErrorNotification();
         creditPage.checkSuccessNotificationHidden();
-        val cardStatus = getCreditCardStatus();
-        assertEquals("DECLINED", cardStatus);
-        assertEquals("", getOrderEntityId(getCreditRequestEntityId("DECLINED")));
+        assertEquals("DECLINED", getEntryFromCreditRequestEntity().getStatus());
+        assertEquals("", getEntryFromOrderEntity().getId());
     }
 
+    @SneakyThrows
     @Test
     @DisplayName("Покупка по несуществующей карте. " +
             "Появляется сообщение об отклонении операции, не создаются OrderEntity и PaymentEntity")
-    void shouldNotSubmitPaymentWithNonexistentCard() throws SQLException {
-        val debitPage = openDebitPage();
-        debitPage.enterCardNumber(DataHelper.CardNumber.getNonexistentCardNumber());
-        debitPage.enterCardMonth(DataHelper.CardMonth.getRandomCardMonth());
-        debitPage.enterCardYear(DataHelper.CardYear.getValidCardYear());
-        debitPage.enterOwnerName(DataHelper.OwnerName.getValidOwnerName());
-        debitPage.enterCardCvv(DataHelper.CardCvv.getValidCardCvv());
+    void shouldNotSubmitPaymentWithNonexistentCard() {
+        val offerPage = new OfferPage();
+        val debitPage = offerPage.openDebitPage();
+        debitPage.enterCardNumber(DataHelper.getNonexistentCardNumber());
+        debitPage.enterCardMonth(DataHelper.getRandomCardMonth());
+        debitPage.enterCardYear(DataHelper.getValidCardYear());
+        debitPage.enterOwnerName(DataHelper.getValidOwnerName());
+        debitPage.enterCardCvv(DataHelper.getValidCardCvv());
         debitPage.continueButton();
         debitPage.checkErrorNotification();
         debitPage.checkSuccessNotificationHidden();
@@ -136,16 +126,18 @@ public class OfferTest {
         checkEmptyOrderEntity();
     }
 
+    @SneakyThrows
     @Test
     @DisplayName("Запрос кредита по несуществующей карте. " +
             "Появляется сообщение об отклонении операции, не создаются OrderEntity и CreditRequestEntity")
-    void shouldNotSubmitCreditWithNonexistentCard() throws SQLException {
-        val creditPage = openCreditPage();
-        creditPage.enterCardNumber(DataHelper.CardNumber.getNonexistentCardNumber());
-        creditPage.enterCardMonth(DataHelper.CardMonth.getRandomCardMonth());
-        creditPage.enterCardYear(DataHelper.CardYear.getValidCardYear());
-        creditPage.enterOwnerName(DataHelper.OwnerName.getValidOwnerName());
-        creditPage.enterCardCvv(DataHelper.CardCvv.getValidCardCvv());
+    void shouldNotSubmitCreditWithNonexistentCard() {
+        val offerPage = new OfferPage();
+        val creditPage = offerPage.openCreditPage();
+        creditPage.enterCardNumber(DataHelper.getNonexistentCardNumber());
+        creditPage.enterCardMonth(DataHelper.getRandomCardMonth());
+        creditPage.enterCardYear(DataHelper.getValidCardYear());
+        creditPage.enterOwnerName(DataHelper.getValidOwnerName());
+        creditPage.enterCardCvv(DataHelper.getValidCardCvv());
         creditPage.continueButton();
         creditPage.checkErrorNotification();
         creditPage.checkSuccessNotificationHidden();
@@ -153,16 +145,18 @@ public class OfferTest {
         checkEmptyOrderEntity();
     }
 
+    @SneakyThrows
     @Test
     @DisplayName("Покупка по карте с недопустимым номером. " +
             "Появляется сообщение о неверно заполненном поле, не создаются OrderEntity и PaymentEntity")
-    void shouldNotSubmitPaymentWithWrongCard() throws SQLException {
-        val debitPage = openDebitPage();
-        debitPage.enterCardNumber(DataHelper.CardNumber.getIlnvalidCardNumber());
-        debitPage.enterCardMonth(DataHelper.CardMonth.getRandomCardMonth());
-        debitPage.enterCardYear(DataHelper.CardYear.getValidCardYear());
-        debitPage.enterOwnerName(DataHelper.OwnerName.getValidOwnerName());
-        debitPage.enterCardCvv(DataHelper.CardCvv.getValidCardCvv());
+    void shouldNotSubmitPaymentWithWrongCard() {
+        val offerPage = new OfferPage();
+        val debitPage = offerPage.openDebitPage();
+        debitPage.enterCardNumber(DataHelper.getIlnvalidCardNumber());
+        debitPage.enterCardMonth(DataHelper.getRandomCardMonth());
+        debitPage.enterCardYear(DataHelper.getValidCardYear());
+        debitPage.enterOwnerName(DataHelper.getValidOwnerName());
+        debitPage.enterCardCvv(DataHelper.getValidCardCvv());
         debitPage.continueButton();
         debitPage.checkCardNumberError();
         debitPage.checkSuccessNotificationHidden();
@@ -170,16 +164,18 @@ public class OfferTest {
         checkEmptyOrderEntity();
     }
 
+    @SneakyThrows
     @Test
     @DisplayName("Запрос кредита по карте с недопустимым номером. " +
             "Появляется сообщение о неверно заполненном поле, не создаются OrderEntity и CreditRequestEntity")
-    void shouldNotSubmitCreditWithIlnvalidCard() throws SQLException {
-        val creditPage = openCreditPage();
-        creditPage.enterCardNumber(DataHelper.CardNumber.getIlnvalidCardNumber());
-        creditPage.enterCardMonth(DataHelper.CardMonth.getRandomCardMonth());
-        creditPage.enterCardYear(DataHelper.CardYear.getValidCardYear());
-        creditPage.enterOwnerName(DataHelper.OwnerName.getValidOwnerName());
-        creditPage.enterCardCvv(DataHelper.CardCvv.getValidCardCvv());
+    void shouldNotSubmitCreditWithIlnvalidCard() {
+        val offerPage = new OfferPage();
+        val creditPage = offerPage.openCreditPage();
+        creditPage.enterCardNumber(DataHelper.getIlnvalidCardNumber());
+        creditPage.enterCardMonth(DataHelper.getRandomCardMonth());
+        creditPage.enterCardYear(DataHelper.getValidCardYear());
+        creditPage.enterOwnerName(DataHelper.getValidOwnerName());
+        creditPage.enterCardCvv(DataHelper.getValidCardCvv());
         creditPage.continueButton();
         creditPage.checkCardNumberError();
         creditPage.checkSuccessNotificationHidden();
@@ -187,16 +183,18 @@ public class OfferTest {
         checkEmptyOrderEntity();
     }
 
+    @SneakyThrows
     @Test
     @DisplayName("Покупка с неверно заполненным полем имени. " +
             "Появляется сообщение о неверно заполненном поле, не создаются OrderEntity и PaymentEntity")
-    void shouldNotSubmitPaymentWithInvalidOwnerName() throws SQLException {
-        val debitPage = openDebitPage();
-        debitPage.enterCardNumber(DataHelper.CardNumber.getApprovedCardNumber());
-        debitPage.enterCardMonth(DataHelper.CardMonth.getRandomCardMonth());
-        debitPage.enterCardYear(DataHelper.CardYear.getValidCardYear());
-        debitPage.enterOwnerName(DataHelper.OwnerName.getInvalidOwnerName());
-        debitPage.enterCardCvv(DataHelper.CardCvv.getValidCardCvv());
+    void shouldNotSubmitPaymentWithInvalidOwnerName() {
+        val offerPage = new OfferPage();
+        val debitPage = offerPage.openDebitPage();
+        debitPage.enterCardNumber(DataHelper.getApprovedCardNumber());
+        debitPage.enterCardMonth(DataHelper.getRandomCardMonth());
+        debitPage.enterCardYear(DataHelper.getValidCardYear());
+        debitPage.enterOwnerName(DataHelper.getInvalidOwnerName());
+        debitPage.enterCardCvv(DataHelper.getValidCardCvv());
         debitPage.continueButton();
         debitPage.checkErrorNotification();
         debitPage.checkSuccessNotificationHidden();
@@ -204,16 +202,18 @@ public class OfferTest {
         checkEmptyOrderEntity();
     }
 
+    @SneakyThrows
     @Test
     @DisplayName("Запрос кредита по карте с несуществующим месяцем. " +
             "Появляется сообщение о неверно заполненном поле, не создаются OrderEntity и CreditRequestEntity")
-    void shouldNotSubmitCreditWithWrongCardMonth() throws SQLException {
-        val creditPage = openCreditPage();
-        creditPage.enterCardNumber(DataHelper.CardNumber.getApprovedCardNumber());
-        creditPage.enterCardMonth(DataHelper.CardMonth.getWrongCardMonth());
-        creditPage.enterCardYear(DataHelper.CardYear.getValidCardYear());
-        creditPage.enterOwnerName(DataHelper.OwnerName.getValidOwnerName());
-        creditPage.enterCardCvv(DataHelper.CardCvv.getValidCardCvv());
+    void shouldNotSubmitCreditWithWrongCardMonth() {
+        val offerPage = new OfferPage();
+        val creditPage = offerPage.openCreditPage();
+        creditPage.enterCardNumber(DataHelper.getApprovedCardNumber());
+        creditPage.enterCardMonth(DataHelper.getWrongCardMonth());
+        creditPage.enterCardYear(DataHelper.getValidCardYear());
+        creditPage.enterOwnerName(DataHelper.getValidOwnerName());
+        creditPage.enterCardCvv(DataHelper.getValidCardCvv());
         creditPage.continueButton();
         creditPage.checkWrongMonthError();
         creditPage.checkSuccessNotificationHidden();
@@ -221,16 +221,18 @@ public class OfferTest {
         checkEmptyOrderEntity();
     }
 
+    @SneakyThrows
     @Test
     @DisplayName("Покупка с неверно заполненным полем месяца. " +
             "Появляется сообщение о неверно заполненном поле, не создаются OrderEntity и PaymentEntity")
-    void shouldNotSubmitPaymentWithInvalidCardMonth() throws SQLException {
-        val debitPage = openDebitPage();
-        debitPage.enterCardNumber(DataHelper.CardNumber.getApprovedCardNumber());
-        debitPage.enterCardMonth(DataHelper.CardMonth.getInvalidCardMonth());
-        debitPage.enterCardYear(DataHelper.CardYear.getValidCardYear());
-        debitPage.enterOwnerName(DataHelper.OwnerName.getValidOwnerName());
-        debitPage.enterCardCvv(DataHelper.CardCvv.getValidCardCvv());
+    void shouldNotSubmitPaymentWithInvalidCardMonth() {
+        val offerPage = new OfferPage();
+        val debitPage = offerPage.openDebitPage();
+        debitPage.enterCardNumber(DataHelper.getApprovedCardNumber());
+        debitPage.enterCardMonth(DataHelper.getInvalidCardMonth());
+        debitPage.enterCardYear(DataHelper.getValidCardYear());
+        debitPage.enterOwnerName(DataHelper.getValidOwnerName());
+        debitPage.enterCardCvv(DataHelper.getValidCardCvv());
         debitPage.continueButton();
         debitPage.checkEmptyMonthError();
         debitPage.checkSuccessNotificationHidden();
@@ -238,16 +240,18 @@ public class OfferTest {
         checkEmptyOrderEntity();
     }
 
+    @SneakyThrows
     @Test
     @DisplayName("Запрос кредита по карте с неверно заполненным полем года. " +
             "Появляется сообщение о неверно заполненном поле, не создаются OrderEntity и CreditRequestEntity")
-    void shouldNotSubmitCreditWithWrongCardYear() throws SQLException {
-        val creditPage = openCreditPage();
-        creditPage.enterCardNumber(DataHelper.CardNumber.getApprovedCardNumber());
-        creditPage.enterCardMonth(DataHelper.CardMonth.getRandomCardMonth());
-        creditPage.enterCardYear(DataHelper.CardYear.getWrongCardYear());
-        creditPage.enterOwnerName(DataHelper.OwnerName.getValidOwnerName());
-        creditPage.enterCardCvv(DataHelper.CardCvv.getValidCardCvv());
+    void shouldNotSubmitCreditWithWrongCardYear() {
+        val offerPage = new OfferPage();
+        val creditPage = offerPage.openCreditPage();
+        creditPage.enterCardNumber(DataHelper.getApprovedCardNumber());
+        creditPage.enterCardMonth(DataHelper.getRandomCardMonth());
+        creditPage.enterCardYear(DataHelper.getWrongCardYear());
+        creditPage.enterOwnerName(DataHelper.getValidOwnerName());
+        creditPage.enterCardCvv(DataHelper.getValidCardCvv());
         creditPage.continueButton();
         creditPage.checkEmptyYearError();
         creditPage.checkSuccessNotificationHidden();
@@ -255,16 +259,18 @@ public class OfferTest {
         checkEmptyOrderEntity();
     }
 
+    @SneakyThrows
     @Test
     @DisplayName("Покупка по карте с закончившимся сроком действия. " +
             "Появляется сообщение об истекшем сроке действия карты, не создаются OrderEntity и PaymentEntity")
-    void shouldNotSubmitPaymentWithEarlyCardYear() throws SQLException {
-        val debitPage = openDebitPage();
-        debitPage.enterCardNumber(DataHelper.CardNumber.getApprovedCardNumber());
-        debitPage.enterCardMonth(DataHelper.CardMonth.getRandomCardMonth());
-        debitPage.enterCardYear(DataHelper.CardYear.getEarlyCardYear());
-        debitPage.enterOwnerName(DataHelper.OwnerName.getValidOwnerName());
-        debitPage.enterCardCvv(DataHelper.CardCvv.getValidCardCvv());
+    void shouldNotSubmitPaymentWithEarlyCardYear() {
+        val offerPage = new OfferPage();
+        val debitPage = offerPage.openDebitPage();
+        debitPage.enterCardNumber(DataHelper.getApprovedCardNumber());
+        debitPage.enterCardMonth(DataHelper.getRandomCardMonth());
+        debitPage.enterCardYear(DataHelper.getEarlyCardYear());
+        debitPage.enterOwnerName(DataHelper.getValidOwnerName());
+        debitPage.enterCardCvv(DataHelper.getValidCardCvv());
         debitPage.continueButton();
         debitPage.checkEarlyYearError();
         debitPage.checkSuccessNotificationHidden();
@@ -272,16 +278,18 @@ public class OfferTest {
         checkEmptyOrderEntity();
     }
 
+    @SneakyThrows
     @Test
     @DisplayName("Запрос кредита по карте с неверно заполненным полем CVV. " +
             "Появляется сообщение о неверно заполненном поле, не создаются OrderEntity и CreditRequestEntity")
-    void shouldNotSubmitCreditWithInvalidCvv() throws SQLException {
-        val creditPage = openCreditPage();
-        creditPage.enterCardNumber(DataHelper.CardNumber.getApprovedCardNumber());
-        creditPage.enterCardMonth(DataHelper.CardMonth.getRandomCardMonth());
-        creditPage.enterCardYear(DataHelper.CardYear.getValidCardYear());
-        creditPage.enterOwnerName(DataHelper.OwnerName.getValidOwnerName());
-        creditPage.enterCardCvv(DataHelper.CardCvv.getInvalidCardCvv());
+    void shouldNotSubmitCreditWithInvalidCvv() {
+        val offerPage = new OfferPage();
+        val creditPage = offerPage.openCreditPage();
+        creditPage.enterCardNumber(DataHelper.getApprovedCardNumber());
+        creditPage.enterCardMonth(DataHelper.getRandomCardMonth());
+        creditPage.enterCardYear(DataHelper.getValidCardYear());
+        creditPage.enterOwnerName(DataHelper.getValidOwnerName());
+        creditPage.enterCardCvv(DataHelper.getInvalidCardCvv());
         creditPage.continueButton();
         creditPage.checkWrongCvcError();
         creditPage.checkSuccessNotificationHidden();
@@ -289,15 +297,17 @@ public class OfferTest {
         checkEmptyOrderEntity();
     }
 
+    @SneakyThrows
     @Test
     @DisplayName("Покупка с пустым полем имени. " +
             "Появляется сообщение о неверно заполненном поле, не создаются OrderEntity и PaymentEntity")
-    void shouldNotSubmitPaymentWithEmptyOwnerName() throws SQLException {
-        val debitPage = openDebitPage();
-        debitPage.enterCardNumber(DataHelper.CardNumber.getApprovedCardNumber());
-        debitPage.enterCardMonth(DataHelper.CardMonth.getRandomCardMonth());
-        debitPage.enterCardYear(DataHelper.CardYear.getValidCardYear());
-        debitPage.enterCardCvv(DataHelper.CardCvv.getValidCardCvv());
+    void shouldNotSubmitPaymentWithEmptyOwnerName() {
+        val offerPage = new OfferPage();
+        val debitPage = offerPage.openDebitPage();
+        debitPage.enterCardNumber(DataHelper.getApprovedCardNumber());
+        debitPage.enterCardMonth(DataHelper.getRandomCardMonth());
+        debitPage.enterCardYear(DataHelper.getValidCardYear());
+        debitPage.enterCardCvv(DataHelper.getValidCardCvv());
         debitPage.continueButton();
         debitPage.checkEmptyNameError();
         debitPage.checkSuccessNotificationHidden();
