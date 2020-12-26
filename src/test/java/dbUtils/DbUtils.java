@@ -1,61 +1,46 @@
 package dbUtils;
 
+import lombok.SneakyThrows;
 import lombok.val;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.BeanHandler;
 
 import java.sql.DriverManager;
-import java.sql.SQLException;
 
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class DbUtils {
 
-    private static String url = "jdbc:mysql://192.168.99.100:3306/app";
-    private static String user = "app";
-    private static String password = "pass";
+    private static String url = System.getProperty("test.dburl");;
+    private static String user = System.getProperty("test.dblogin");;
+    private static String password = System.getProperty("test.dbpassword");
 
-    public static String getDebitCardStatus() throws SQLException {
+    @SneakyThrows
+    public static PaymentEntity getEntryFromPaymentEntity() {
         val runner = new QueryRunner();
         try (val conn = DriverManager.getConnection(url, user, password)) {
-            val debitCardStatus = runner.query(conn, "SELECT * FROM payment_entity", new BeanHandler<>(PaymentEntity.class));
-            return debitCardStatus.getStatus();
+            return runner.query(conn, "SELECT * FROM payment_entity ORDER BY created DESC", new BeanHandler<>(PaymentEntity.class));
         }
     }
 
-    public static String getCreditCardStatus() throws SQLException {
+    @SneakyThrows
+    public static CreditRequestEntity getEntryFromCreditRequestEntity() {
         val runner = new QueryRunner();
         try (val conn = DriverManager.getConnection(url, user, password)) {
-            val creditCardStatus = runner.query(conn, "SELECT * FROM credit_request_entity", new BeanHandler<>(CreditRequestEntity.class));
-            return creditCardStatus.getStatus();
+            return runner.query(conn, "SELECT * FROM credit_request_entity ORDER BY created DESC", new BeanHandler<>(CreditRequestEntity.class));
         }
     }
 
-    public static String getPaymentEntityId(String status) throws SQLException {
+    @SneakyThrows
+    public static OrderEntity getEntryFromOrderEntity() {
         val runner = new QueryRunner();
         try (val conn = DriverManager.getConnection(url, user, password)) {
-            val paymentEntity = runner.query(conn, "SELECT * FROM payment_entity WHERE status='" + status + "';", new BeanHandler<>(PaymentEntity.class));
-            return paymentEntity.getTransaction_id();
+            return runner.query(conn, "SELECT * FROM order_entity ORDER BY created DESC", new BeanHandler<>(OrderEntity.class));
         }
     }
 
-    public static String getCreditRequestEntityId(String status) throws SQLException {
-        val runner = new QueryRunner();
-        try (val conn = DriverManager.getConnection(url, user, password)) {
-            val creditRequestEntity = runner.query(conn, "SELECT * FROM credit_request_entity WHERE status='" + status + "';", new BeanHandler<>(CreditRequestEntity.class));
-            return creditRequestEntity.getBank_id();
-        }
-    }
-
-    public static String getOrderEntityId(String paymentEntityId) throws SQLException {
-        val runner = new QueryRunner();
-        try (val conn = DriverManager.getConnection(url, user, password)) {
-            val orderEntity = runner.query(conn, "SELECT * FROM order_entity WHERE payment_id='" + paymentEntityId + "';", new BeanHandler<>(OrderEntity.class));
-            return orderEntity.getId();
-        }
-    }
-
-    public static void checkEmptyPaymentEntity() throws SQLException {
+    @SneakyThrows
+    public static void checkEmptyPaymentEntity() {
         val runner = new QueryRunner();
         try (val conn = DriverManager.getConnection(url, user, password)) {
             val paymentEntity = runner.query(conn, "SELECT * FROM payment_entity;", new BeanHandler<>(PaymentEntity.class));
@@ -63,7 +48,8 @@ public class DbUtils {
         }
     }
 
-    public static void checkEmptyCreditRequestEntity() throws SQLException {
+    @SneakyThrows
+    public static void checkEmptyCreditRequestEntity() {
         val runner = new QueryRunner();
         try (val conn = DriverManager.getConnection(url, user, password)) {
             val creditRequestEntity = runner.query(conn, "SELECT * FROM credit_request_entity;", new BeanHandler<>(CreditRequestEntity.class));
@@ -71,7 +57,8 @@ public class DbUtils {
         }
     }
 
-    public static void checkEmptyOrderEntity() throws SQLException {
+    @SneakyThrows
+    public static void checkEmptyOrderEntity() {
         val runner = new QueryRunner();
         try (val conn = DriverManager.getConnection(url, user, password)) {
             val orderEntity = runner.query(conn, "SELECT * FROM order_entity;", new BeanHandler<>(OrderEntity.class));
@@ -79,7 +66,8 @@ public class DbUtils {
         }
     }
 
-    public static void cleanData() throws SQLException {
+    @SneakyThrows
+    public static void cleanData() {
         val runner = new QueryRunner();
         try (val conn = DriverManager.getConnection(url, user, password)) {
             runner.update(conn, "DELETE FROM payment_entity;");
