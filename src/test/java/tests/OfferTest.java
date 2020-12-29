@@ -1,4 +1,4 @@
-package test;
+package tests;
 
 import com.codeborne.selenide.logevents.SelenideLogger;
 import data.DataHelper;
