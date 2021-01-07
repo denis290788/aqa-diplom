@@ -45,7 +45,7 @@ public class DataHelper {
 
     public static String getValidCardYear() {
         Faker faker = new Faker();
-        int year = faker.number().numberBetween(21,24);
+        int year = faker.number().numberBetween(22,25);
         return Integer.toString(year);
     }
 
