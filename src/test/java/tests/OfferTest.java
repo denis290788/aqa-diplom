@@ -31,7 +31,6 @@ public class OfferTest {
         SelenideLogger.removeListener("allure");
     }
 
-    @SneakyThrows
     @Test
     @DisplayName("Покупка при валидных данных по карте APPROVED. " +
             "Покупка подтверждается, создаются PaymentEntity и OrderEntity")
@@ -50,7 +49,6 @@ public class OfferTest {
         assertNotEquals("", getEntryFromOrderEntity().getId());
     }
 
-    @SneakyThrows
     @Test
     @DisplayName("Запрос кредита при валидных данных по карте APPROVED. " +
             "Кредит подтверждается, создаются CreditRequestEntity и OrderEntity")
@@ -69,7 +67,6 @@ public class OfferTest {
         assertNotEquals("", getEntryFromOrderEntity().getId());
     }
 
-    @SneakyThrows
     @Test
     @DisplayName("Покупка при валидных данных по карте DECLINED. " +
             "Появляется сообщение об отклонении операции, создается только PaymentEntity без OrderEntity")
@@ -88,7 +85,6 @@ public class OfferTest {
         assertEquals("", getEntryFromOrderEntity().getId());
     }
 
-    @SneakyThrows
     @Test
     @DisplayName("Запрос кредита при валидных данных по карте DECLINED. " +
             "Появляется сообщение об отклонении операции, создается только CreditRequestEntity без OrderEntity")
@@ -107,7 +103,6 @@ public class OfferTest {
         assertEquals("", getEntryFromOrderEntity().getId());
     }
 
-    @SneakyThrows
     @Test
     @DisplayName("Покупка по несуществующей карте. " +
             "Появляется сообщение об отклонении операции, не создаются OrderEntity и PaymentEntity")
@@ -126,7 +121,6 @@ public class OfferTest {
         checkEmptyOrderEntity();
     }
 
-    @SneakyThrows
     @Test
     @DisplayName("Запрос кредита по несуществующей карте. " +
             "Появляется сообщение об отклонении операции, не создаются OrderEntity и CreditRequestEntity")
@@ -145,7 +139,6 @@ public class OfferTest {
         checkEmptyOrderEntity();
     }
 
-    @SneakyThrows
     @Test
     @DisplayName("Покупка по карте с недопустимым номером. " +
             "Появляется сообщение о неверно заполненном поле, не создаются OrderEntity и PaymentEntity")
@@ -164,7 +157,6 @@ public class OfferTest {
         checkEmptyOrderEntity();
     }
 
-    @SneakyThrows
     @Test
     @DisplayName("Запрос кредита по карте с недопустимым номером. " +
             "Появляется сообщение о неверно заполненном поле, не создаются OrderEntity и CreditRequestEntity")
@@ -183,7 +175,6 @@ public class OfferTest {
         checkEmptyOrderEntity();
     }
 
-    @SneakyThrows
     @Test
     @DisplayName("Покупка с неверно заполненным полем имени. " +
             "Появляется сообщение о неверно заполненном поле, не создаются OrderEntity и PaymentEntity")
@@ -202,7 +193,6 @@ public class OfferTest {
         checkEmptyOrderEntity();
     }
 
-    @SneakyThrows
     @Test
     @DisplayName("Запрос кредита по карте с несуществующим месяцем. " +
             "Появляется сообщение о неверно заполненном поле, не создаются OrderEntity и CreditRequestEntity")
@@ -221,7 +211,6 @@ public class OfferTest {
         checkEmptyOrderEntity();
     }
 
-    @SneakyThrows
     @Test
     @DisplayName("Покупка с неверно заполненным полем месяца. " +
             "Появляется сообщение о неверно заполненном поле, не создаются OrderEntity и PaymentEntity")
@@ -240,7 +229,6 @@ public class OfferTest {
         checkEmptyOrderEntity();
     }
 
-    @SneakyThrows
     @Test
     @DisplayName("Запрос кредита по карте с неверно заполненным полем года. " +
             "Появляется сообщение о неверно заполненном поле, не создаются OrderEntity и CreditRequestEntity")
@@ -259,7 +247,6 @@ public class OfferTest {
         checkEmptyOrderEntity();
     }
 
-    @SneakyThrows
     @Test
     @DisplayName("Покупка по карте с закончившимся сроком действия. " +
             "Появляется сообщение об истекшем сроке действия карты, не создаются OrderEntity и PaymentEntity")
@@ -278,7 +265,6 @@ public class OfferTest {
         checkEmptyOrderEntity();
     }
 
-    @SneakyThrows
     @Test
     @DisplayName("Запрос кредита по карте с неверно заполненным полем CVV. " +
             "Появляется сообщение о неверно заполненном поле, не создаются OrderEntity и CreditRequestEntity")
@@ -297,7 +283,6 @@ public class OfferTest {
         checkEmptyOrderEntity();
     }
 
-    @SneakyThrows
     @Test
     @DisplayName("Покупка с пустым полем имени. " +
             "Появляется сообщение о неверно заполненном поле, не создаются OrderEntity и PaymentEntity")
