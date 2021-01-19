@@ -299,4 +299,22 @@ public class OfferTest {
         checkEmptyPaymentEntity();
         checkEmptyOrderEntity();
     }
+
+    @Test
+    @DisplayName("Запрос кредита по карте с указанием месяца '00'. " +
+            "Появляется сообщение о неверно заполненном поле, не создаются OrderEntity и CreditRequestEntity")
+    void shouldNotSubmitCreditWithNullCardMonth() {
+        val offerPage = new OfferPage();
+        val creditPage = offerPage.openCreditPage();
+        creditPage.enterCardNumber(DataHelper.getApprovedCardNumber());
+        creditPage.enterCardMonth(DataHelper.getNullCardMonth());
+        creditPage.enterCardYear(DataHelper.getValidCardYear());
+        creditPage.enterOwnerName(DataHelper.getValidOwnerName());
+        creditPage.enterCardCvv(DataHelper.getValidCardCvv());
+        creditPage.continueButton();
+        creditPage.checkWrongMonthError();
+        creditPage.checkSuccessNotificationHidden();
+        checkEmptyCreditRequestEntity();
+        checkEmptyOrderEntity();
+    }
 }
