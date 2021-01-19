@@ -46,6 +46,7 @@
     ````
     gradlew test -Dtest.dburl=jdbc:mysql://192.168.99.100:3306/app
     ````
+        
             
    - для конфигурации с postgresql
  
