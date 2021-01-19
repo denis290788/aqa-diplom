@@ -42,6 +42,9 @@ public class DataHelper {
     public static String getInvalidCardMonth() {
         return "&&";
     }
+    public static String getNullCardMonth() {
+        return "00";
+    }
 
     public static String getValidCardYear() {
         Faker faker = new Faker();
