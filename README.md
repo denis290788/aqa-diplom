@@ -1,8 +1,18 @@
 # Дипломный проект профессии «Тестировщик»
 Дипломный проект представляет собой автоматизацию тестирования комплексного сервиса, взаимодействующего с СУБД и API Банка.
 
-#### План автоматизации 
+
+**План автоматизации**
+
  [Plan.md](https://github.com/denis290788/aqa-diplom/blob/master/docs/Plan.md)
+ 
+**Отчётные документы по итогам тестирования**
+
+[Report.md](https://github.com/denis290788/aqa-diplom/blob/master/docs/Report.md)
+
+**Отчётные документы по итогам автоматизации**
+
+[Summary.md](https://github.com/denis290788/aqa-diplom/blob/master/docs/Summary.md)
 
 ## Запуск приложения
 Для запуска необходимы следующие инструменты:
@@ -46,7 +56,6 @@
     ````
     gradlew test -Dtest.dburl=jdbc:mysql://192.168.99.100:3306/app
     ````
-        
             
    - для конфигурации с postgresql
  
@@ -60,3 +69,4 @@
     ````
     docker-compose down
     ````     
+
